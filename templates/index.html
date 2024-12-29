@@ -45,4 +45,19 @@
             const result = await response.json();
             document.getElementById("result").innerText = result.result;
             if (result.result === "正解◯") {
-        
+                setTimeout(fetchQuestion, 1000);
+            }
+        }
+
+        async function resetGame() {
+            await fetch("/reset_game", { method: "POST" });
+            fetchQuestion();
+        }
+
+        document.getElementById("submit-btn").addEventListener("click", checkAnswer);
+        document.getElementById("reset-btn").addEventListener("click", resetGame);
+
+        fetchQuestion();
+    </script>
+</body>
+</html>
