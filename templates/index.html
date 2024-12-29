@@ -5,21 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>漢字クイズ</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+        }
+        #timer {
+            font-size: 1.5rem;
+            color: red;
+        }
+        .center-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 80vh;
+            flex-grow: 1;
+        }
+        #kanji {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        #result {
+            font-size: 1.5rem;
+            margin: 10px 0;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>漢字クイズ</h1>
-        <div id="quiz-container">
-            <h2 id="kanji"></h2>
-            <input type="text" id="answer" placeholder="ひらがなで入力してください" />
-            <button id="submit-btn">決定</button>
-            <p id="result"></p>
-            <button id="reset-btn">リセット</button>
-        </div>
+    <!-- タイマー表示 -->
+    <div id="timer">60</div>
+
+    <!-- クイズ画面 -->
+    <div class="center-container">
+        <h2 id="yomi"></h2>
+        <h1 id="kanji"></h1>
+        <input type="text" id="answer" placeholder="ひらがなで入力してください" />
+        <button id="submit-btn">決定</button>
+        <p id="result"></p>
+        <button id="reset-btn">リセット</button>
     </div>
 
     <script>
         let currentAnswer = "";
+        let timer = 60; // タイマー初期化
+        let timerInterval;
+
+        // タイマー更新処理
+        function startTimer() {
+            timer = 60;
+            document.getElementById("timer").innerText = timer;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timer--;
+                document.getElementById("timer").innerText = timer;
+
+                if (timer <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById("result").innerText = "タイムアウト☓";
+                    document.getElementById("submit-btn").disabled = true;
+                }
+            }, 1000);
+        }
 
         async function fetchQuestion() {
             const response = await fetch("/get_question");
@@ -30,9 +78,11 @@
                 return;
             }
             document.getElementById("kanji").innerText = data.kanji;
+            document.getElementById("yomi").innerText = "";
             currentAnswer = data.yomi;
             document.getElementById("result").innerText = "";
             document.getElementById("submit-btn").disabled = false;
+            startTimer();
         }
 
         async function checkAnswer() {
@@ -44,8 +94,10 @@
             });
             const result = await response.json();
             document.getElementById("result").innerText = result.result;
+
             if (result.result === "正解◯") {
-                setTimeout(fetchQuestion, 1000);
+                clearInterval(timerInterval);
+                setTimeout(fetchQuestion, 1000); // 1秒後に次の問題
             }
         }
 
@@ -57,7 +109,7 @@
         document.getElementById("submit-btn").addEventListener("click", checkAnswer);
         document.getElementById("reset-btn").addEventListener("click", resetGame);
 
-        fetchQuestion();
+        fetchQuestion(); // 初期問題を取得
     </script>
 </body>
 </html>
