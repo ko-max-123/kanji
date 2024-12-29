@@ -18,7 +18,7 @@
 
         }
         #timer {
-            font-size: 5rem;
+            font-size: 1.5rem;
             color: red;
         }
         .center-container {
@@ -30,24 +30,32 @@
             flex-grow: 1;
         }
         #kanji {
-            font-size: 14rem;
+            font-size: 3rem;
             margin-bottom: 10px;
         }
         #result {
             font-size: 1.5rem;
             margin: 10px 0;
         }
+        #submit-btn {
+            font-size: 1.2rem; /* ボタンを大きくする */
+            padding: 10px 20px;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
+    <!-- タイマー表示 -->
+    <div id="timer">60</div>
+
     <!-- クイズ画面 -->
     <div class="center-container">
         <h2 id="yomi"></h2>
         <h1 id="kanji"></h1>
-        <!-- タイマー表示 -->
-        <div>残り時間<div id="timer">60</div></div>
-        <input type="text" id="answer" placeholder="ひらがなで入力してください" />
-        <button id="submit-btn">決定</button>
+        <div>
+            <input type="text" id="answer" placeholder="ひらがなで入力してください" />
+            <button id="submit-btn">決定</button>
+        </div>
         <p id="result"></p>
         <button id="reset-btn">リセット</button>
     </div>
@@ -86,6 +94,7 @@
             document.getElementById("yomi").innerText = "";
             currentAnswer = data.yomi;
             document.getElementById("result").innerText = "";
+            document.getElementById("answer").value = ""; // 入力フィールドをクリア
             document.getElementById("submit-btn").disabled = false;
             startTimer();
         }
@@ -102,6 +111,7 @@
 
             if (result.result === "正解◯") {
                 clearInterval(timerInterval);
+                document.getElementById("answer").value = ""; // 入力フィールドをクリア
                 setTimeout(fetchQuestion, 1000); // 1秒後に次の問題
             }
         }
@@ -110,6 +120,13 @@
             await fetch("/reset_game", { method: "POST" });
             fetchQuestion();
         }
+
+        // Enterキーで決定ボタンを押したときの処理
+        document.getElementById("answer").addEventListener("keypress", function (event) {
+            if (event.key === "Enter") {
+                checkAnswer(); // 決定ボタンと同じ処理を実行
+            }
+        });
 
         document.getElementById("submit-btn").addEventListener("click", checkAnswer);
         document.getElementById("reset-btn").addEventListener("click", resetGame);
