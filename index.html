@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>漢字クイズ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>漢字クイズ</h1>
+        <div id="quiz-container">
+            <h2 id="kanji"></h2>
+            <input type="text" id="answer" placeholder="ひらがなで入力してください" />
+            <button id="submit-btn">決定</button>
+            <p id="result"></p>
+            <button id="reset-btn">リセット</button>
+        </div>
+    </div>
+
+    <script>
+        let currentAnswer = "";
+
+        async function fetchQuestion() {
+            const response = await fetch("/get_question");
+            const data = await response.json();
+            if (data.status === "complete") {
+                document.getElementById("kanji").innerText = data.message;
+                document.getElementById("submit-btn").disabled = true;
+                return;
+            }
+            document.getElementById("kanji").innerText = data.kanji;
+            currentAnswer = data.yomi;
+            document.getElementById("result").innerText = "";
+            document.getElementById("submit-btn").disabled = false;
+        }
+
+        async function checkAnswer() {
+            const answer = document.getElementById("answer").value;
+            const response = await fetch("/check_answer", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ answer: answer, correct_answer: currentAnswer }),
+            });
+            const result = await response.json();
+            document.getElementById("result").innerText = result.result;
+            if (result.result === "正解◯") {
+                setTimeout(fetchQuestion, 1000); // 1秒後に次の問題へ
+            }
+        }
+
+        async function resetGame() {
+            await fetch("/reset_game", { method: "POST" });
+            fetchQuestion();
+        }
+
+        document.getElementById("submit-btn").addEventListener("click", checkAnswer);
+        document.getElementById("reset-btn").addEventListener("click", resetGame);
+
+        fetchQuestion(); // 最初の問題を取得
+    </script>
+</body>
+</html>
