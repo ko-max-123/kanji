@@ -45,19 +45,4 @@
             const result = await response.json();
             document.getElementById("result").innerText = result.result;
             if (result.result === "正解◯") {
-                setTimeout(fetchQuestion, 1000); // 1秒後に次の問題へ
-            }
-        }
-
-        async function resetGame() {
-            await fetch("/reset_game", { method: "POST" });
-            fetchQuestion();
-        }
-
-        document.getElementById("submit-btn").addEventListener("click", checkAnswer);
-        document.getElementById("reset-btn").addEventListener("click", resetGame);
-
-        fetchQuestion(); // 最初の問題を取得
-    </script>
-</body>
-</html>
+        
