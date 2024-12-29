@@ -12,7 +12,7 @@
             padding: 20px;
         }
         #timer {
-            font-size: 1.5rem;
+            font-size: 5rem;
             color: red;
         }
         .center-container {
@@ -24,12 +24,18 @@
             flex-grow: 1;
         }
         #kanji {
-            font-size: 3rem;
+            font-size: 14rem;
             margin-bottom: 10px;
         }
         #result {
             font-size: 1.5rem;
             margin: 10px 0;
+        }
+        #ansewr{
+            font-size: xxx-large;
+            height: 15.8rem;
+            width: 60%;
+
         }
     </style>
 </head>
@@ -39,7 +45,7 @@
         <h2 id="yomi"></h2>
         <h1 id="kanji"></h1>
         <!-- タイマー表示 -->
-        <div id="timer">60</div>
+        <div>残り時間<div id="timer">60</div></div>
         <input type="text" id="answer" placeholder="ひらがなで入力してください" />
         <button id="submit-btn">決定</button>
         <p id="result"></p>
