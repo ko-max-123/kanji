@@ -21,7 +21,7 @@ def single_player():
 # 二人プレイ - 部屋選択画面
 @app.route('/multi_player')
 def multi_player():
-    return render_template('room_select.html', rooms=rooms)
+    return render_template('room_select.html')
 
 # 部屋作成API
 @app.route('/create_room', methods=['POST'])
@@ -33,6 +33,11 @@ def create_room():
         room_participants[room_name] = 0
         return jsonify({"status": "success", "room_name": room_name})
     return jsonify({"status": "error", "message": "部屋名が重複しています。"})
+
+# 部屋一覧API
+@app.route('/get_rooms', methods=['GET'])
+def get_rooms():
+    return jsonify({"rooms": list(rooms.keys())})
 
 # ロビー画面
 @app.route('/lobby/<room_name>')

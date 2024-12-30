@@ -28,33 +28,17 @@
         .room-item:hover {
             background-color: #f0f0f0;
         }
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-size: 1.5rem;
-            visibility: hidden;
-            z-index: 10;
-        }
-        .overlay.show {
-            visibility: visible;
-        }
         .buttons {
             display: flex;
             gap: 10px;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
     <div class="center-container">
         <h1>部屋選択</h1>
+        <button id="refresh-btn" class="button-primary">更新</button>
         <div id="room-list"></div>
 
         <!-- ボタン -->
@@ -77,13 +61,14 @@
         const confirmRoomBtn = document.getElementById('confirm-room-btn');
         const createRoomBtn = document.getElementById('create-room-btn');
         const joinRoomBtn = document.getElementById('join-room-btn');
+        const refreshBtn = document.getElementById('refresh-btn');
+        const roomList = document.getElementById('room-list');
         let selectedRoom = "";
 
-        // 部屋リスト更新
+        // 部屋一覧の更新
         async function fetchRooms() {
             const response = await fetch('/get_rooms');
             const data = await response.json();
-            const roomList = document.getElementById('room-list');
             roomList.innerHTML = "";
 
             if (data.rooms.length === 0) {
@@ -94,7 +79,7 @@
                     div.classList.add('room-item');
                     div.innerText = room;
 
-                    // 部屋クリック時に選択
+                    // 部屋を選択
                     div.addEventListener('click', () => {
                         selectedRoom = room;
                         alert(`選択した部屋: ${room}`);
@@ -105,12 +90,12 @@
             }
         }
 
-        // 部屋作成ボタン
+        // 部屋作成
         createRoomBtn.addEventListener('click', () => {
             overlay.classList.add('show');
         });
 
-        // 部屋確定ボタン
+        // 部屋確定
         confirmRoomBtn.addEventListener('click', async () => {
             const roomName = document.getElementById('room-name').value;
             const response = await fetch('/create_room', {
@@ -126,7 +111,7 @@
             }
         });
 
-        // 部屋参加ボタン
+        // 部屋参加
         joinRoomBtn.addEventListener('click', () => {
             if (selectedRoom) {
                 window.location.href = `/lobby/${selectedRoom}`;
@@ -134,6 +119,9 @@
                 alert("参加する部屋を選択してください。");
             }
         });
+
+        // 更新ボタン
+        refreshBtn.addEventListener('click', fetchRooms);
 
         // 初期化
         fetchRooms();
