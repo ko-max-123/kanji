@@ -20,6 +20,14 @@
             border: 1px solid #ccc;
             margin-bottom: 10px;
         }
+        .room-item {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+        }
+        .room-item:hover {
+            background-color: #f0f0f0;
+        }
         .overlay {
             position: fixed;
             top: 0;
@@ -38,13 +46,22 @@
         .overlay.show {
             visibility: visible;
         }
+        .buttons {
+            display: flex;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="center-container">
         <h1>部屋選択</h1>
         <div id="room-list"></div>
-        <button id="create-room-btn" class="button-primary">テスト部屋を立てる</button>
+
+        <!-- ボタン -->
+        <div class="buttons">
+            <button id="create-room-btn" class="button-primary">テスト部屋を立てる</button>
+            <button id="join-room-btn" class="button-secondary">テスト部屋に参加する</button>
+        </div>
     </div>
 
     <!-- オーバーレイ -->
@@ -59,13 +76,33 @@
         const overlay = document.getElementById('overlay');
         const confirmRoomBtn = document.getElementById('confirm-room-btn');
         const createRoomBtn = document.getElementById('create-room-btn');
+        const joinRoomBtn = document.getElementById('join-room-btn');
+        let selectedRoom = "";
 
         // 部屋リスト更新
         async function fetchRooms() {
             const response = await fetch('/get_rooms');
             const data = await response.json();
             const roomList = document.getElementById('room-list');
-            roomList.innerHTML = data.rooms.map(room => `<p>${room}</p>`).join("");
+            roomList.innerHTML = "";
+
+            if (data.rooms.length === 0) {
+                roomList.innerHTML = "<p>部屋がありません。</p>";
+            } else {
+                data.rooms.forEach(room => {
+                    const div = document.createElement('div');
+                    div.classList.add('room-item');
+                    div.innerText = room;
+
+                    // 部屋クリック時に選択
+                    div.addEventListener('click', () => {
+                        selectedRoom = room;
+                        alert(`選択した部屋: ${room}`);
+                    });
+
+                    roomList.appendChild(div);
+                });
+            }
         }
 
         // 部屋作成ボタン
@@ -89,6 +126,16 @@
             }
         });
 
+        // 部屋参加ボタン
+        joinRoomBtn.addEventListener('click', () => {
+            if (selectedRoom) {
+                window.location.href = `/lobby/${selectedRoom}`;
+            } else {
+                alert("参加する部屋を選択してください。");
+            }
+        });
+
+        // 初期化
         fetchRooms();
     </script>
 </body>
