@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for
-import random
 import os
 
 app = Flask(__name__)
@@ -29,6 +28,7 @@ def create_room():
     data = request.get_json()
     room_name = data.get('room_name')
     if room_name and room_name not in rooms:
+        # 部屋作成と参加者数の初期化
         rooms[room_name] = []
         room_participants[room_name] = 0
         return jsonify({"status": "success", "room_name": room_name})

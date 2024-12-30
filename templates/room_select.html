@@ -108,11 +108,18 @@
             });
         }
 
-        joinRoomBtn.addEventListener('click', () => {
-            if (selectedRoom) {
-                window.location.href = `/lobby/${selectedRoom}`;
+        confirmRoomBtn.addEventListener('click', async () => {
+            const roomName = document.getElementById('room-name').value;
+            const response = await fetch('/create_room', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ room_name: roomName })
+            });
+            const result = await response.json();
+            if (result.status === "success") {
+                window.location.href = `/lobby/${roomName}`;
             } else {
-                alert("参加する部屋を選択してください。");
+                alert(result.message);
             }
         });
 
