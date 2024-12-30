@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ロビー - 漢字クイズ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css">
+    <style>
+        .center-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 80vh;
+        }
+        .info-box {
+            border: 1px solid #ccc;
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+        }
+        .buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="center-container">
+        <h1>ロビー: <span id="room-name"></span></h1>
+        <div class="info-box">
+            <p>現在の参加者数: <span id="participants">0</span> 人</p>
+        </div>
+
+        <!-- ボタン -->
+        <div class="buttons">
+            <button id="start-test-btn" class="button-primary">テスト開始</button>
+            <button id="end-test-btn" class="button-secondary">テスト終了</button>
+        </div>
+    </div>
+
+    <script>
+        const roomName = "{{ room_name }}";
+        let participants = JSON.parse('{{ participants | tojson | safe }}');
+
+        // 初期表示
+        document.getElementById('room-name').innerText = roomName;
+        document.getElementById('participants').innerText = participants;
+
+        // テスト開始ボタン
+        document.getElementById('start-test-btn').addEventListener('click', () => {
+            alert('テストを開始します！\nまだ実装中です。');
+        });
+
+        // テスト終了ボタン
+        document.getElementById('end-test-btn').addEventListener('click', async () => {
+            const response = await fetch(`/end_test/${roomName}`, {
+                method: 'POST',
+            });
+            const result = await response.json();
+            if (result.status === 'success') {
+                alert('テストを終了しました。');
+                window.location.href = '/multi_player';
+            } else {
+                alert('エラーが発生しました。');
+            }
+        });
+
+        // 定期的に参加者数を更新する（将来的に拡張用）
+        setInterval(async () => {
+            // ダミーデータとして参加者数を増やすロジック
+            participants++;
+            document.getElementById('participants').innerText = participants;
+        }, 5000); // 5秒ごとに更新
+    </script>
+</body>
+</html>
