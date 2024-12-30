@@ -18,6 +18,9 @@ data = load_kanji_data("kannji.txt")
 used_data = []
 remaining_data = data[:]
 
+# 部屋情報管理
+rooms = []  # 現在作成されている部屋のリスト
+
 # メニュー画面
 @app.route('/')
 def index():
@@ -28,47 +31,25 @@ def index():
 def single_player():
     return render_template('index.html')
 
-# 二人プレイ（未実装通知）
+# 二人プレイ - 部屋選択画面
 @app.route('/multi_player')
 def multi_player():
-    return jsonify({"status": "in_progress", "message": "まだ実装中"})
+    return render_template('room_select.html', rooms=rooms)
 
-# 問題取得API
-@app.route('/get_question', methods=['GET'])
-def get_question():
-    global remaining_data, used_data
-    if not remaining_data:
-        return jsonify({"status": "complete", "message": "クリア！"})
-
-    question = random.choice(remaining_data)
-    remaining_data.remove(question)
-    used_data.append(question)
-
-    return jsonify({
-        "status": "question",
-        "kanji": question[0],
-        "yomi": question[1]
-    })
-
-# 回答チェックAPI
-@app.route('/check_answer', methods=['POST'])
-def check_answer():
+# 部屋作成API
+@app.route('/create_room', methods=['POST'])
+def create_room():
     data = request.get_json()
-    user_input = data.get('answer')
-    correct_answer = data.get('correct_answer')
+    room_name = data.get('room_name')
+    if room_name and room_name not in rooms:
+        rooms.append(room_name)
+        return jsonify({"status": "success", "rooms": rooms})
+    return jsonify({"status": "error", "message": "部屋名が重複しています。"})
 
-    if user_input == correct_answer:
-        return jsonify({"result": "正解◯"})
-    else:
-        return jsonify({"result": "間違い☓"})
-
-# ゲームリセットAPI
-@app.route('/reset_game', methods=['POST'])
-def reset_game():
-    global remaining_data, used_data
-    used_data = []
-    remaining_data = data[:]
-    return jsonify({"status": "reset"})
+# 部屋一覧API
+@app.route('/get_rooms', methods=['GET'])
+def get_rooms():
+    return jsonify({"rooms": rooms})
 
 # サーバー起動
 if __name__ == '__main__':

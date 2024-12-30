@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>部屋選択 - 漢字クイズ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css">
+    <style>
+        .center-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 80vh;
+        }
+        #room-list {
+            width: 300px;
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+        .room-item {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="center-container">
+        <h1>部屋選択</h1>
+        <!-- 部屋一覧 -->
+        <div id="room-list">
+            <!-- 部屋リストを表示 -->
+        </div>
+
+        <!-- ボタン -->
+        <div class="buttons">
+            <button id="create-room-btn" class="button-primary">テスト部屋を立てる</button>
+            <button id="join-room-btn" class="button-secondary">テスト部屋に参加する</button>
+        </div>
+    </div>
+
+    <script>
+        // 部屋リストの取得と表示
+        async function fetchRooms() {
+            const response = await fetch('/get_rooms');
+            const data = await response.json();
+            const roomList = document.getElementById('room-list');
+            roomList.innerHTML = "";
+
+            if (data.rooms.length === 0) {
+                roomList.innerHTML = "<p>部屋がありません。</p>";
+            } else {
+                data.rooms.forEach(room => {
+                    const div = document.createElement('div');
+                    div.classList.add('room-item');
+                    div.innerText = room;
+                    roomList.appendChild(div);
+                });
+            }
+        }
+
+        // 部屋作成処理
+        async function createRoom() {
+            const roomName = prompt("部屋名を入力してください:");
+            if (!roomName) return;
+
+            const response = await fetch('/create_room', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ room_name: roomName }),
+            });
+
+            const data = await response.json();
+            if (data.status === "success") {
+                alert("部屋が作成されました！");
+                fetchRooms(); // 部屋一覧更新
+            } else {
+                alert(data.message);
+            }
+        }
+
+        // ボタンイベント
+        document.getElementById('create-room-btn').addEventListener('click', createRoom);
+        document.getElementById('join-room-btn').addEventListener('click', () => {
+            alert("まだ実装中です。");
+        });
+
+        // 初期化
+        fetchRooms();
+    </script>
+</body>
+</html>
