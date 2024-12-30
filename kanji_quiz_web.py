@@ -4,20 +4,6 @@ import os
 
 app = Flask(__name__)
 
-# 漢字データの読み込み
-def load_kanji_data(filename):
-    try:
-        with open(filename, 'r', encoding='utf-8') as file:
-            data = [line.strip().split() for line in file.readlines()]
-        return data
-    except FileNotFoundError:
-        return []
-
-# データ初期化
-data = load_kanji_data("kannji.txt")
-used_data = []
-remaining_data = data[:]
-
 # 部屋情報管理
 rooms = {}
 room_participants = {}
@@ -56,6 +42,17 @@ def lobby(room_name):
     participants = room_participants.get(room_name, 0)
     return render_template('lobby.html', room_name=room_name, participants=participants)
 
+# 参加者数の増減API
+@app.route('/update_participants/<room_name>', methods=['POST'])
+def update_participants(room_name):
+    action = request.json.get('action')
+    if room_name in room_participants:
+        if action == "enter":
+            room_participants[room_name] += 1
+        elif action == "leave" and room_participants[room_name] > 0:
+            room_participants[room_name] -= 1
+    return jsonify({"participants": room_participants[room_name]})
+
 # テスト終了API
 @app.route('/end_test/<room_name>', methods=['POST'])
 def end_test(room_name):
@@ -66,5 +63,5 @@ def end_test(room_name):
 
 # サーバー起動
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))  # Render用の環境変数PORTを取得
+    port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)

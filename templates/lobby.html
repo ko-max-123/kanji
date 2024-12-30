@@ -42,16 +42,26 @@
 
     <script>
         const roomName = "{{ room_name }}";
-        let participants = JSON.parse('{{ participants | tojson | safe }}');
 
         // 初期表示
         document.getElementById('room-name').innerText = roomName;
-        document.getElementById('participants').innerText = participants;
 
-        // テスト開始ボタン
-        document.getElementById('start-test-btn').addEventListener('click', () => {
-            alert('テストを開始します！\nまだ実装中です。');
-        });
+        // 参加者数更新関数
+        async function updateParticipants(action) {
+            const response = await fetch(`/update_participants/${roomName}`, {
+                method: 'POST',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: action })
+            });
+            const data = await response.json();
+            document.getElementById('participants').innerText = data.participants;
+        }
+
+        // ページ読み込み時に参加者カウントを増加
+        window.addEventListener('load', () => updateParticipants("enter"));
+
+        // ページ閉じる時に参加者カウントを減少
+        window.addEventListener('beforeunload', () => updateParticipants("leave"));
 
         // テスト終了ボタン
         document.getElementById('end-test-btn').addEventListener('click', async () => {
@@ -66,13 +76,6 @@
                 alert('エラーが発生しました。');
             }
         });
-
-        // 定期的に参加者数を更新する（将来的に拡張用）
-        setInterval(async () => {
-            // ダミーデータとして参加者数を増やすロジック
-            participants++;
-            document.getElementById('participants').innerText = participants;
-        }, 5000); // 5秒ごとに更新
     </script>
 </body>
 </html>
