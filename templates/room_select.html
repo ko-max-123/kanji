@@ -25,7 +25,7 @@
             border-bottom: 1px solid #ddd;
             cursor: pointer;
         }
-        .room-item:hover {
+        .room-item:hover, .room-item.selected {
             background-color: #f0f0f0;
         }
         .buttons {
@@ -62,18 +62,15 @@
 <body>
     <div class="center-container">
         <h1>部屋選択</h1>
-        <!-- 更新ボタン -->
         <button id="refresh-btn" class="button-primary">更新</button>
         <div id="room-list"></div>
 
-        <!-- ボタン -->
         <div class="buttons">
             <button id="create-room-btn" class="button-primary">テスト部屋を立てる</button>
             <button id="join-room-btn" class="button-secondary">テスト部屋に参加する</button>
         </div>
     </div>
 
-    <!-- オーバーレイ -->
     <div id="overlay" class="overlay">
         <div class="overlay-content">
             <h2>部屋を作成</h2>
@@ -94,59 +91,23 @@
         const roomList = document.getElementById('room-list');
         let selectedRoom = "";
 
-        // 部屋一覧の更新
         async function fetchRooms() {
             const response = await fetch('/get_rooms');
             const data = await response.json();
             roomList.innerHTML = "";
-
-            if (data.rooms.length === 0) {
-                roomList.innerHTML = "<p>部屋がありません。</p>";
-            } else {
-                data.rooms.forEach(room => {
-                    const div = document.createElement('div');
-                    div.classList.add('room-item');
-                    div.innerText = room;
-
-                    // 部屋を選択
-                    div.addEventListener('click', () => {
-                        selectedRoom = room;
-                        alert(`選択した部屋: ${room}`);
-                    });
-
-                    roomList.appendChild(div);
+            data.rooms.forEach(room => {
+                const div = document.createElement('div');
+                div.classList.add('room-item');
+                div.innerText = room;
+                div.addEventListener('click', () => {
+                    document.querySelectorAll('.room-item').forEach(item => item.classList.remove('selected'));
+                    div.classList.add('selected');
+                    selectedRoom = room;
                 });
-            }
+                roomList.appendChild(div);
+            });
         }
 
-        // 部屋作成ボタンのクリック時
-        createRoomBtn.addEventListener('click', () => {
-            overlay.classList.add('show'); // オーバーレイ表示
-        });
-
-        // オーバーレイのキャンセルボタン
-        cancelRoomBtn.addEventListener('click', () => {
-            overlay.classList.remove('show'); // オーバーレイ非表示
-        });
-
-        // 部屋作成確定ボタン
-        confirmRoomBtn.addEventListener('click', async () => {
-            const roomName = document.getElementById('room-name').value;
-            const response = await fetch('/create_room', {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ room_name: roomName })
-            });
-            const result = await response.json();
-            if (result.status === "success") {
-                overlay.classList.remove('show'); // オーバーレイ非表示
-                window.location.href = `/lobby/${roomName}`;
-            } else {
-                alert(result.message);
-            }
-        });
-
-        // 部屋参加ボタン
         joinRoomBtn.addEventListener('click', () => {
             if (selectedRoom) {
                 window.location.href = `/lobby/${selectedRoom}`;
@@ -155,10 +116,10 @@
             }
         });
 
-        // 更新ボタン
         refreshBtn.addEventListener('click', fetchRooms);
+        createRoomBtn.addEventListener('click', () => overlay.classList.add('show'));
+        cancelRoomBtn.addEventListener('click', () => overlay.classList.remove('show'));
 
-        // 初期化
         fetchRooms();
     </script>
 </body>

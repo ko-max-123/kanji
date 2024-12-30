@@ -47,7 +47,7 @@ def lobby(room_name):
     participants = room_participants.get(room_name, 0)
     return render_template('lobby.html', room_name=room_name, participants=participants)
 
-# 参加者数の増減API
+# 参加者数更新API
 @app.route('/update_participants/<room_name>', methods=['POST'])
 def update_participants(room_name):
     action = request.json.get('action')
