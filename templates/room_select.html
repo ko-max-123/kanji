@@ -20,78 +20,75 @@
             border: 1px solid #ccc;
             margin-bottom: 10px;
         }
-        .room-item {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-        .buttons {
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
             display: flex;
-            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.5rem;
+            visibility: hidden;
+            z-index: 10;
+        }
+        .overlay.show {
+            visibility: visible;
         }
     </style>
 </head>
 <body>
     <div class="center-container">
         <h1>部屋選択</h1>
-        <!-- 部屋一覧 -->
-        <div id="room-list">
-            <!-- 部屋リストを表示 -->
-        </div>
+        <div id="room-list"></div>
+        <button id="create-room-btn" class="button-primary">テスト部屋を立てる</button>
+    </div>
 
-        <!-- ボタン -->
-        <div class="buttons">
-            <button id="create-room-btn" class="button-primary">テスト部屋を立てる</button>
-            <button id="join-room-btn" class="button-secondary">テスト部屋に参加する</button>
+    <!-- オーバーレイ -->
+    <div id="overlay" class="overlay">
+        <div>
+            <input type="text" id="room-name" placeholder="部屋名を入力">
+            <button id="confirm-room-btn">確定</button>
         </div>
     </div>
 
     <script>
-        // 部屋リストの取得と表示
+        const overlay = document.getElementById('overlay');
+        const confirmRoomBtn = document.getElementById('confirm-room-btn');
+        const createRoomBtn = document.getElementById('create-room-btn');
+
+        // 部屋リスト更新
         async function fetchRooms() {
             const response = await fetch('/get_rooms');
             const data = await response.json();
             const roomList = document.getElementById('room-list');
-            roomList.innerHTML = "";
-
-            if (data.rooms.length === 0) {
-                roomList.innerHTML = "<p>部屋がありません。</p>";
-            } else {
-                data.rooms.forEach(room => {
-                    const div = document.createElement('div');
-                    div.classList.add('room-item');
-                    div.innerText = room;
-                    roomList.appendChild(div);
-                });
-            }
+            roomList.innerHTML = data.rooms.map(room => `<p>${room}</p>`).join("");
         }
 
-        // 部屋作成処理
-        async function createRoom() {
-            const roomName = prompt("部屋名を入力してください:");
-            if (!roomName) return;
+        // 部屋作成ボタン
+        createRoomBtn.addEventListener('click', () => {
+            overlay.classList.add('show');
+        });
 
+        // 部屋確定ボタン
+        confirmRoomBtn.addEventListener('click', async () => {
+            const roomName = document.getElementById('room-name').value;
             const response = await fetch('/create_room', {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ room_name: roomName }),
+                body: JSON.stringify({ room_name: roomName })
             });
-
-            const data = await response.json();
-            if (data.status === "success") {
-                alert("部屋が作成されました！");
-                fetchRooms(); // 部屋一覧更新
+            const result = await response.json();
+            if (result.status === "success") {
+                window.location.href = `/lobby/${roomName}`;
             } else {
-                alert(data.message);
+                alert(result.message);
             }
-        }
-
-        // ボタンイベント
-        document.getElementById('create-room-btn').addEventListener('click', createRoom);
-        document.getElementById('join-room-btn').addEventListener('click', () => {
-            alert("まだ実装中です。");
         });
 
-        // 初期化
         fetchRooms();
     </script>
 </body>
