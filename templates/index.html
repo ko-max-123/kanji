@@ -12,7 +12,7 @@
             padding: 20px;
         }
         #timer {
-            font-size: 5rem;
+            font-size: 1.5rem;
             color: red;
         }
         .center-container {
@@ -24,42 +24,35 @@
             flex-grow: 1;
         }
         #kanji {
-            font-size: 13rem;
+            font-size: 3rem;
             margin-bottom: 10px;
         }
         #result {
             font-size: 1.5rem;
             margin: 10px 0;
         }
-        #answer{
-            font-size: 4rem;
-            height: 15.8rem;
-            width: 60%;
-
+        #submit-btn {
+            font-size: 1.2rem;
+            padding: 10px 20px;
         }
-
     </style>
 </head>
 <body>
-
-    <!-- クイズ画面 -->
+    <div id="timer">60</div>
     <div class="center-container">
         <h2 id="yomi"></h2>
         <h1 id="kanji"></h1>
-        <!-- タイマー表示 -->
-        <div>残り時間<div id="timer">60</div></div>
         <input type="text" id="answer" placeholder="ひらがなで入力してください" />
-        <p id="result"></p>
         <button id="submit-btn">決定</button>
+        <p id="result"></p>
         <button id="reset-btn">リセット</button>
     </div>
 
     <script>
         let currentAnswer = "";
-        let timer = 60; // タイマー初期化
+        let timer = 60;
         let timerInterval;
 
-        // タイマー更新処理
         function startTimer() {
             timer = 60;
             document.getElementById("timer").innerText = timer;
@@ -67,11 +60,9 @@
             timerInterval = setInterval(() => {
                 timer--;
                 document.getElementById("timer").innerText = timer;
-
                 if (timer <= 0) {
                     clearInterval(timerInterval);
                     document.getElementById("result").innerText = "タイムアウト☓";
-                    document.getElementById("submit-btn").disabled = true;
                 }
             }, 1000);
         }
@@ -81,15 +72,10 @@
             const data = await response.json();
             if (data.status === "complete") {
                 document.getElementById("kanji").innerText = data.message;
-                document.getElementById("submit-btn").disabled = true;
                 return;
             }
             document.getElementById("kanji").innerText = data.kanji;
-            document.getElementById("yomi").innerText = "";
             currentAnswer = data.yomi;
-            document.getElementById("result").innerText = "";
-            document.getElementById("answer").value = ""; // 入力フィールドをクリア
-            document.getElementById("submit-btn").disabled = false;
             startTimer();
         }
 
@@ -98,34 +84,15 @@
             const response = await fetch("/check_answer", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ answer: answer, correct_answer: currentAnswer }),
+                body: JSON.stringify({ answer, correct_answer: currentAnswer })
             });
             const result = await response.json();
             document.getElementById("result").innerText = result.result;
-
-            if (result.result === "正解◯") {
-                clearInterval(timerInterval);
-                document.getElementById("answer").value = ""; // 入力フィールドをクリア
-                setTimeout(fetchQuestion, 1000); // 1秒後に次の問題
-            }
+            if (result.result === "正解◯") setTimeout(fetchQuestion, 1000);
         }
-
-        async function resetGame() {
-            await fetch("/reset_game", { method: "POST" });
-            fetchQuestion();
-        }
-
-        // Enterキーで決定ボタンを押したときの処理
-        document.getElementById("answer").addEventListener("keypress", function (event) {
-            if (event.key === "Enter") {
-                checkAnswer(); // 決定ボタンと同じ処理を実行
-            }
-        });
 
         document.getElementById("submit-btn").addEventListener("click", checkAnswer);
-        document.getElementById("reset-btn").addEventListener("click", resetGame);
-
-        fetchQuestion(); // 初期問題を取得
+        fetchQuestion();
     </script>
 </body>
 </html>

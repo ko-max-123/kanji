@@ -1,7 +1,22 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for
+import random
 import os
 
 app = Flask(__name__)
+
+# 漢字データの読み込み
+def load_kanji_data(filename):
+    try:
+        with open(filename, 'r', encoding='utf-8') as file:
+            data = [line.strip().split() for line in file.readlines()]
+        return data
+    except FileNotFoundError:
+        return []
+
+# データ初期化
+data = load_kanji_data("kannji.txt")
+used_data = []
+remaining_data = data[:]
 
 # 部屋情報管理
 rooms = {}
@@ -28,7 +43,6 @@ def create_room():
     data = request.get_json()
     room_name = data.get('room_name')
     if room_name and room_name not in rooms:
-        # 部屋作成と参加者数の初期化
         rooms[room_name] = []
         room_participants[room_name] = 0
         return jsonify({"status": "success", "room_name": room_name})
@@ -57,6 +71,43 @@ def update_participants(room_name):
         elif action == "leave" and room_participants[room_name] > 0:
             room_participants[room_name] -= 1
     return jsonify({"participants": room_participants[room_name]})
+
+# 漢字クイズ取得API（1人プレイ用）
+@app.route('/get_question', methods=['GET'])
+def get_question():
+    global remaining_data, used_data
+    if not remaining_data:
+        return jsonify({"status": "complete", "message": "クリア！"})
+
+    question = random.choice(remaining_data)
+    remaining_data.remove(question)
+    used_data.append(question)
+
+    return jsonify({
+        "status": "question",
+        "kanji": question[0],
+        "yomi": question[1]
+    })
+
+# 回答チェックAPI
+@app.route('/check_answer', methods=['POST'])
+def check_answer():
+    data = request.get_json()
+    user_input = data.get('answer')
+    correct_answer = data.get('correct_answer')
+
+    if user_input == correct_answer:
+        return jsonify({"result": "正解◯"})
+    else:
+        return jsonify({"result": "間違い☓"})
+
+# ゲームリセットAPI
+@app.route('/reset_game', methods=['POST'])
+def reset_game():
+    global remaining_data, used_data
+    used_data = []
+    remaining_data = data[:]
+    return jsonify({"status": "reset"})
 
 # テスト終了API
 @app.route('/end_test/<room_name>', methods=['POST'])
