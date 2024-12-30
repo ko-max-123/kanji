@@ -33,6 +33,30 @@
             gap: 10px;
             margin-top: 10px;
         }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.3s;
+        }
+        .overlay.show {
+            visibility: visible;
+            opacity: 1;
+        }
+        .overlay-content {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -47,10 +71,25 @@
         </div>
     </div>
 
+    <!-- オーバーレイ -->
+    <div id="overlay" class="overlay">
+        <div class="overlay-content">
+            <h2>部屋を作成</h2>
+            <input type="text" id="room-name" placeholder="部屋名を入力">
+            <br><br>
+            <button id="confirm-room-btn" class="button-primary">確定</button>
+            <button id="cancel-room-btn" class="button-secondary">キャンセル</button>
+        </div>
+    </div>
+
     <script>
-        const roomList = document.getElementById('room-list');
-        const refreshBtn = document.getElementById('refresh-btn');
+        const overlay = document.getElementById('overlay');
+        const confirmRoomBtn = document.getElementById('confirm-room-btn');
+        const cancelRoomBtn = document.getElementById('cancel-room-btn');
+        const createRoomBtn = document.getElementById('create-room-btn');
         const joinRoomBtn = document.getElementById('join-room-btn');
+        const refreshBtn = document.getElementById('refresh-btn');
+        const roomList = document.getElementById('room-list');
         let selectedRoom = "";
 
         // 部屋一覧を取得して表示
@@ -73,6 +112,29 @@
             });
         }
 
+        // 部屋作成確定ボタンの処理
+        confirmRoomBtn.addEventListener('click', async () => {
+            const roomName = document.getElementById('room-name').value;
+            if (!roomName) {
+                alert("部屋名を入力してください。");
+                return;
+            }
+
+            const response = await fetch('/create_room', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ room_name: roomName })
+            });
+
+            const result = await response.json();
+            if (result.status === "success") {
+                overlay.classList.remove('show');
+                window.location.href = `/lobby/${roomName}`;
+            } else {
+                alert(result.message);
+            }
+        });
+
         // 部屋参加ボタンの処理
         joinRoomBtn.addEventListener('click', async () => {
             if (selectedRoom) {
@@ -88,6 +150,16 @@
             } else {
                 alert("参加する部屋を選択してください。");
             }
+        });
+
+        // 部屋作成ボタンの表示処理
+        createRoomBtn.addEventListener('click', () => {
+            overlay.classList.add('show');
+        });
+
+        // キャンセルボタン
+        cancelRoomBtn.addEventListener('click', () => {
+            overlay.classList.remove('show');
         });
 
         // 更新ボタン処理
