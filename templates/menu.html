@@ -36,19 +36,25 @@
 <body>
     <div class="center-container">
         <button onclick="location.href='/single_player'" class="button-primary">一人プレイ</button>
-        <button onclick="showOverlay()" class="button-secondary">二人プレイ</button>
+        <button onclick="location.href='/multi_player'" class="button-secondary">二人プレイ</button>
     </div>
 
+    <!-- コメントアウト: まだ実装中オーバーレイ -->
+    <!-- 
     <div id="overlay" class="overlay">
         まだ実装中
     </div>
+    -->
 
     <script>
+        // コメントアウト: まだ実装中オーバーレイ表示処理
+        /*
         function showOverlay() {
             const overlay = document.getElementById('overlay');
             overlay.classList.add('show');
             setTimeout(() => overlay.classList.remove('show'), 2000);
         }
+        */
     </script>
 </body>
 </html>
